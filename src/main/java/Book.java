@@ -87,10 +87,6 @@ public class Book {
         this.status = status;
     }
 
-    public void setCopies(List<BookCopy> copies) {
-        this.copies = copies;
-    }
-
     public String getYear() {
         return year;
     }
@@ -100,19 +96,29 @@ public class Book {
     }
 
     //Thêm 1 bản copy
-    public void addCopy(BookCopy copy) {
-        this.copies.add(copy);
-        System.out.println("Copy with id :" + copy.getCopyID() + " has been added to library.");
+    public void addNewCopy(BookCopy newCopy) {
+        this.copies.add(newCopy);
+        this.copiesQuantity = this.copies.size();
     }
 
+
+
     //Lấy về bản copy với copyID của quyển sách
-    public BookCopy bookCopy(int copyID) {
+    public BookCopy getCopyByID(int copyID) {
         for (BookCopy copy : copies) {
             if (copy.getCopyID() == copyID) {
                 return copy;
             }
         }
         return null;
+    }
+
+    //In ra tất cả bản copy và trạng thái tương ứng của quyển sách
+    public void displayAllCopies() {
+        //System.out.println(this.toString());
+        for (BookCopy copy : copies) {
+            System.out.println(copy.toString());
+        }
     }
 
     //Xóa 1 bản copy (nếu mất/ hỏng...)
@@ -127,10 +133,9 @@ public class Book {
 
     @Override
     public String toString() {
-        String bookInfo = String.format("%-15s %-70s %-25s %-35s %-35s %-10s %-10s %-10s%n",
+        return String.format("%-15s %-70s %-25s %-35s %-35s %-10s %-10s %-10s%n",
                 this.getISBN(), this.getTitle(), this.getAuthor(), this.getPublisher(), this.getCategory(),
                 this.getYear(), this.getCopiesQuantity(), this.getStatus());
-        return bookInfo;
     }
 
 }

@@ -124,13 +124,14 @@ public class LibraryMemberManagement extends Library {
         } else {
             System.out.println(header);
             String order = String.format("%-10s", 1);
-            System.out.println(order + " " + memberList.toString());
+            for (Member member : memberList)
+                System.out.println(order + " " + member.toString());
         }
     }
 
     //Tìm kiếm theo tên
     public void searchMembersByName(String name) {
-        List<Member> memberList = searchMembersListByCriteria("Name",name);
+        List<Member> memberList = searchMembersListByCriteria("Name", name);
         if (memberList.isEmpty()) {
             System.out.println("There is no member with name contains: " + name);
         } else {
@@ -176,12 +177,12 @@ public class LibraryMemberManagement extends Library {
 
     // Xóa thành viên
     public void removeMemberByID(int memberID) {
-            Member memberToRemove = getMemberByID(memberID);
-            if (memberToRemove != null) {
-                library.removeMember(memberToRemove);
-            } else {
-                System.out.println("There is no member with this ID!");
-            }
+        Member memberToRemove = getMemberByID(memberID);
+        if (memberToRemove != null) {
+            library.removeMember(memberToRemove);
+        } else {
+            System.out.println("There is no member with this ID!");
+        }
     }
 
     //Sửa đổi thông tin thành viên
@@ -209,40 +210,17 @@ public class LibraryMemberManagement extends Library {
             System.out.print("Enter contact info >> ");
             String newContactInfo = input.nextLine();
 
-            memberToModify.setMemberID(memberID);
+            library.updateMemberField(memberID, "Name", newName);
             memberToModify.setName(newName);
+            library.updateMemberField(memberID, "ContactInfo", newContactInfo);
             memberToModify.setContactInfo(newContactInfo);
+            library.updateMemberField(memberID, "ID", ID);
+            memberToModify.setMemberID(memberID);
             System.out.println("This member has just updated! New information:");
             System.out.println(header);
             System.out.println(order + " " + memberToModify.toString());
         } else {
             System.out.println("There is no member with this ID!");
-        }
-    }
-
-    // Tính phí phạt trễ hạn
-    public void calculateLateFee(int memberID) {
-        Member member = getMemberByID(memberID);
-        if (member != null) {
-            double totalLateFee = 0;
-            for (Borrowing borrowing : member.getBorrowings()) {
-                if (borrowing.isOverdue()) {
-                    totalLateFee += borrowing.calculateLateFee();
-                }
-            }
-            System.out.println("Total late fee for member " + memberID + ": " + totalLateFee);
-        } else {
-            System.out.println("Member with ID " + memberID + " not found.");
-        }
-    }
-
-    // Hiển thị sách thành viên đang mượn
-    public void displayMemberBorrowings(int memberID) {
-        Member member = getMemberByID(memberID);
-        if (member != null) {
-            member.displayBorrowings();
-        } else {
-            System.out.println("Member with ID " + memberID + " not found.");
         }
     }
 }

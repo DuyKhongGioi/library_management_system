@@ -1,21 +1,23 @@
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.*;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.BufferedReader;
 
 public class Library {
     private static final String name = "ZLibrary";
     private static final String address = "144 Xuan Thuy, Cau Giay, Ha Noi, Viet Nam";
     private static final String dataPath = "Books.db";
+    private static final String memberPath = "Members.db";
+    private static final String copiesPath = "BooksCopies.db";
     protected List<Book> books;
+    private List<BookCopy> bookCopies;
     protected List<Member> members;
     public Library() {
         this.books = new ArrayList<>();
         this.members = new ArrayList<>();
+        this.bookCopies = new ArrayList<>();
         loadBooksFromDatabase();
+        loadMembersFromDatabase();
+        loadCopiesFromDatabase();
     }
 
     public String getName() {
@@ -34,31 +36,12 @@ public class Library {
         return members;
     }
 
-    public void setBooks(List<Book> books) {
-        this.books = books;
-    }
-
-    public void setMembers(List<Member> members) {
-        this.members = members;
-    }
-
-
-    // Kiểm tra ISBN đã tồn tại trong cơ sở dữ liệu hay chưa
-    private boolean isISBNExists(Connection conn, String isbn) {
-        String checkSql = "SELECT 1 FROM Books WHERE ISBN = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(checkSql)) {
-            pstmt.setString(1, isbn);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next(); // Trả về true nếu tìm thấy
-            }
-        } catch (SQLException e) {
-            System.out.println("Lỗi khi kiểm tra ISBN: " + e.getMessage());
-        }
-        return false;
+    public List<BookCopy> getBookCopies() {
+        return bookCopies;
     }
 
     //Tải sách từ database
-    private void loadBooksFromDatabase() {
+    public void loadBooksFromDatabase() {
         // Lấy đường dẫn thực tế đến file database từ thư mục resources
         String url = null;
         try {
@@ -117,12 +100,7 @@ public class Library {
             pstmt.setString(8, book.getStatus());
 
             // Thực hiện câu lệnh INSERT
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                System.out.println("Đã chèn sách thành công với ISBN: " + book.getISBN());
-            } else {
-                System.out.println("Không thể chèn sách với ISBN: " + book.getISBN());
-            }
+            pstmt.executeUpdate();
 
         } catch (SQLException e) {
             System.out.println("Lỗi khi chèn sách vào cơ sở dữ liệu: " + e.getMessage());
@@ -144,12 +122,7 @@ public class Library {
             pstmt.setString(1, isbn);
 
             // Thực hiện câu lệnh DELETE
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                System.out.println("Đã xóa sách thành công với ISBN: " + isbn);
-            } else {
-                System.out.println("Không tìm thấy sách với ISBN: " + isbn);
-            }
+            pstmt.executeUpdate();
 
         } catch (SQLException e) {
             System.out.println("Lỗi khi xóa sách khỏi cơ sở dữ liệu: " + e.getMessage());
@@ -172,15 +145,172 @@ public class Library {
             pstmt.setString(2, isbn);
 
             // Thực hiện câu lệnh UPDATE
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                System.out.println("Đã cập nhật thành công " + fieldName + " cho ISBN: " + isbn);
-            } else {
-                System.out.println("Không tìm thấy sách với ISBN: " + isbn);
-            }
+            pstmt.executeUpdate();
 
         } catch (SQLException e) {
             System.out.println("Lỗi khi cập nhật " + fieldName + " trong cơ sở dữ liệu: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    //tải thành viên từ database
+    public void loadMembersFromDatabase() {
+        String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(memberPath).getPath();
+        String sql = "SELECT * FROM Members";
+        try (Connection conn = DriverManager.getConnection(url);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                //Tạo đối tượng Member từ database
+                int memberID = rs.getInt("memberID");
+                String name = rs.getString("Name");
+                String contactInfo = rs.getString("Contact");
+
+                Member member = new Member(memberID, name, contactInfo);
+                this.members.add(member);
+            }
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi tải từ database " + e.getMessage());
+        }
+    }
+
+    //Add một member vào database
+    public void insertMember(Member member) {
+        String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(memberPath).getPath();
+        String sql = "INSERT INTO Members (memberID, name, contact) VALUES (?, ?, ?)";
+
+        try(Connection conn = DriverManager.getConnection(url);
+            PreparedStatement pstm = conn.prepareStatement(sql)) {
+            //Thiết lập các giá trị
+            pstm.setInt(1, member.getMemberID());
+            pstm.setString(2, member.getName());
+            pstm.setString(3, member.getContactInfo());
+
+            pstm.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Loi " + e.getMessage());
+        }
+    }
+
+    //Xoa mot member khoi database
+    public void deleteMemberByID(int memberID) {
+        String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(memberPath).getPath();
+        String sql = "DELETE FROM Members WHERE MemberID = ?";
+
+        try(Connection conn = DriverManager.getConnection(url);
+        PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, memberID);
+
+            //Thuc hien cau lenh delete
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Loi " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    //Cap nhat thuoc tinh cho thanh vien
+    public void updateMemberField(int memberID, String fieldName, Object newValue) {
+        String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(memberPath).getPath();
+        String sql = "UPDATE Members SET " + fieldName + " = ? WHERE MemberID = ?";
+
+        try(Connection conn = DriverManager.getConnection(url);
+        PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            //thiet lap gia tri moi
+            pstmt.setObject(1, newValue);
+            pstmt.setInt(2, memberID);
+
+            //Thuc hien cau lenh update
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Loi " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    //Add một member vào database
+    public void insertCopy(BookCopy bookCopy) {
+        String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(copiesPath).getPath();
+        String sql = "INSERT INTO BooksCopies (ISBN, copyID, status) VALUES (?, ?, ?)";
+
+        try(Connection conn = DriverManager.getConnection(url);
+            PreparedStatement pstm = conn.prepareStatement(sql)) {
+            //Thiết lập các giá trị
+            pstm.setString(1, bookCopy.getBook().getISBN());
+            pstm.setInt(2, bookCopy.getCopyID());
+            pstm.setString(3, bookCopy.getStatus());
+            pstm.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Loi " + e.getMessage());
+        }
+    }
+
+    public void loadCopiesFromDatabase() {
+        String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(copiesPath).getPath();
+        String sql = "SELECT * FROM BooksCopies";
+
+        try (Connection conn = DriverManager.getConnection(url);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String ISBN = rs.getString("ISBN");
+                int copyID = rs.getInt("CopyID");
+                String status = rs.getString("Status");
+
+                // Tìm sách tương ứng với ISBN
+                Book book = findBookByISBN(ISBN);
+                if (book != null) {
+                    // Tạo bản copy mới và gắn nó vào sách tương ứng
+                    BookCopy copy = new BookCopy(book);
+                    copy.setCopyID(copyID);
+                    copy.setStatus(status);
+
+                    // Thêm bản copy vào danh sách của sách
+                    book.addNewCopy(copy);
+
+                    // Thêm bản copy vào danh sách tổng
+                    this.bookCopies.add(copy);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi tải từ database " + e.getMessage());
+        }
+    }
+
+    // Phương thức phụ để tìm sách dựa trên ISBN
+    private Book findBookByISBN(String ISBN) {
+        for (Book book : books) {
+            if (book.getISBN().equals(ISBN)) {
+                return book;
+            }
+        }
+        return null;
+    }
+
+    public void updateBookCopyField(int copyID, String fieldName, Object newValue) {
+        String sql = "UPDATE BooksCopies SET " + fieldName + " = ? WHERE copyID = ?";
+
+        String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(copiesPath).getPath();
+
+        try (Connection conn = DriverManager.getConnection(url);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // Thiết lập giá trị cho câu lệnh UPDATE
+            pstmt.setObject(1, newValue);
+            pstmt.setInt(2, copyID);
+
+            // Thực hiện câu lệnh UPDATE
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                System.out.println("Successfully updated " + fieldName + " for copyID: " + copyID);
+            } else {
+                System.out.println("No record found with copyID: " + copyID);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error updating " + fieldName + " in BooksCopies: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -200,9 +330,10 @@ public class Library {
     public void addCopies(Book book, int copies) {
         for (int i = 0; i < copies; i++) {
             BookCopy copy = new BookCopy(book);
-            book.addCopy(copy);
+            book.addNewCopy(copy);
+            this.insertCopy(copy);
         }
-        book.setCopiesQuantity(copies);
+        book.setCopiesQuantity(book.getCopies().size());
         System.out.println("Book's copies have been added to library.");
     }
 
@@ -221,6 +352,7 @@ public class Library {
     public void addMember(Member member) {
         if (member != null) {
             this.members.add(member);
+            this.insertMember(member);
             System.out.println("Member added.");
         } else {
             System.out.println("Action failed.");
@@ -230,7 +362,7 @@ public class Library {
     //Xóa thành viên
     public void removeMember(Member member) {
         this.members.remove(member);
+        this.deleteMemberByID(member.getMemberID());
         System.out.println("Member removed : " + member.getName());
     }
-
 }

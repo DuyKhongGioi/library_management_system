@@ -1,11 +1,9 @@
 import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class CommandLineInterfaceMember {
     private Scanner scanner = new Scanner(System.in);
-    private Library library = new Library();
     private LibraryMemberManagement libraryMemberManagement = new LibraryMemberManagement();
 
     public void displayMenu() {
@@ -72,7 +70,6 @@ public class CommandLineInterfaceMember {
                             scanner.nextLine();
                         }
                     }
-                    scanner.nextLine();
                     libraryMemberManagement.searchMembersByID(id);
                     libraryMemberManagement.setMemberMap(new HashMap<>());
                     System.out.println("Do you want to search another one?");
@@ -100,7 +97,7 @@ public class CommandLineInterfaceMember {
                     if (userChoice.equals("0")) {
                         searchFlag = false;
                     } else {
-                        searchFlag = searchFlag;
+                        searchFlag = true;
                     }
                     break;
             }
@@ -116,7 +113,7 @@ public class CommandLineInterfaceMember {
 
     //Phương thức xử lí ngoại lệ khi chọn thứ tự thành viên
     public void removeMemberHandler(String criteria) {
-        if (criteria == "ID") {
+        if (Objects.equals(criteria, "ID")) {
 
             System.out.println("Enter the ID of the member you want to remove: ");
             int ID;
@@ -284,7 +281,7 @@ public class CommandLineInterfaceMember {
                     if (userChoice.equals("0")) {
                         modifyFlag = false;
                     } else {
-                        modifyFlag = modifyFlag;
+                        modifyFlag = true;
                     }
                     break;
             }
@@ -331,10 +328,5 @@ public class CommandLineInterfaceMember {
                     break;
             }
         }
-    }
-
-    public static void main(String[] args) {
-        CommandLineInterfaceMember commandLineInterfaceMember = new CommandLineInterfaceMember();
-        commandLineInterfaceMember.eventsHandler();
     }
 }

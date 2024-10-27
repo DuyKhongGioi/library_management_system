@@ -2,12 +2,14 @@ public class BookCopy {
     private static int iDGenerator = 0;
     private int copyID;
     private String status;
+    private String ISBN;
     private Book book;
 
     public BookCopy(Book book) {
         this.copyID = iDGenerator++;
         this.status = "Available";
         this.book = book;
+        this.ISBN = book.getISBN();
     }
 
     public int getCopyID() {
@@ -32,18 +34,8 @@ public class BookCopy {
         return book;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
-    }
-
-
-    //Kiểm tra nếu bản copy bị hỏng hóc thì xóa đi
-    public boolean isNotAvailable() {
-        return status.equals("No longer available");
-    }
-
-    public void updateStatus(String status) {
-        this.status = status;
-        System.out.println("This copy is now " + status);
+    @Override
+    public String toString() {
+        return String.format("%-15s %-25s %-25s%n", copyID, status, this.getBook().getISBN());
     }
 }
