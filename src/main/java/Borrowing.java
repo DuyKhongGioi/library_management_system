@@ -60,7 +60,7 @@ public class Borrowing {
 
     @Override
     public String toString() {
-        return String.format("%-20s %-25s %-60s %-25s %-25s%n", borrowingID, this.bookCopy.getBook().getISBN(),
+        return String.format("%-20s %-25s %-60s %-40s %-40s%n", borrowingID, this.bookCopy.getBook().getISBN(),
                 this.bookCopy.getBook().getTitle(), borrowDate, dueDate);
     }
 

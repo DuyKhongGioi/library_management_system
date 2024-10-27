@@ -177,7 +177,7 @@ public class Library {
     //Add một member vào database
     public void insertMember(Member member) {
         String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(memberPath).getPath();
-        String sql = "INSERT INTO Members (memberID, name, contact) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Members (memberID, Name, Contact) VALUES (?, ?, ?)";
 
         try(Connection conn = DriverManager.getConnection(url);
             PreparedStatement pstm = conn.prepareStatement(sql)) {
@@ -302,13 +302,7 @@ public class Library {
             pstmt.setInt(2, copyID);
 
             // Thực hiện câu lệnh UPDATE
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                System.out.println("Successfully updated " + fieldName + " for copyID: " + copyID);
-            } else {
-                System.out.println("No record found with copyID: " + copyID);
-            }
-
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error updating " + fieldName + " in BooksCopies: " + e.getMessage());
             e.printStackTrace();

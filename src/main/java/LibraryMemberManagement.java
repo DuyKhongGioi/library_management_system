@@ -212,9 +212,9 @@ public class LibraryMemberManagement extends Library {
 
             library.updateMemberField(memberID, "Name", newName);
             memberToModify.setName(newName);
-            library.updateMemberField(memberID, "ContactInfo", newContactInfo);
+            library.updateMemberField(memberID, "Contact", newContactInfo);
             memberToModify.setContactInfo(newContactInfo);
-            library.updateMemberField(memberID, "ID", ID);
+            library.updateMemberField(memberID, "memberID", ID);
             memberToModify.setMemberID(memberID);
             System.out.println("This member has just updated! New information:");
             System.out.println(header);

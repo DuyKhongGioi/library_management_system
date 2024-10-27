@@ -13,7 +13,7 @@ public class LibraryBorrowingManagement {
     private LibraryBookManagement libraryBookManagement = new LibraryBookManagement();
     private static final String borrowingPath = "Borrowings.db";
     private final String copyHeader = String.format("%-15s %-25s %-25s%n", "CopyID", "Status", "ISBN");
-    private final String borrowingHeader = String.format("%-20s %-25s %-60s %-25s %-25s%n",
+    private final String borrowingHeader = String.format("%-20s %-25s %-60s %-40s %-40s%n",
             "Borrowing ID", "ISBN", "Book", "Borrowing Date", "Due Date");
 
     public LibraryBorrowingManagement() {
@@ -79,8 +79,6 @@ public class LibraryBorrowingManagement {
     public void addBorrowingToDatabase(Borrowing borrowing) {
         String sql = "INSERT INTO Borrowings (borrowingID, memberID, ISBN, BorrowDate, DueDate) VALUES (?, ?, ?, ?, ?)";
         String url = "jdbc:sqlite:" + getClass().getClassLoader().getResource(borrowingPath).getPath();
-
-        System.out.println("Database URL: " + url); // Kiểm tra đường dẫn cơ sở dữ liệu
 
         try (Connection conn = DriverManager.getConnection(url);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -152,8 +150,7 @@ public class LibraryBorrowingManagement {
                         Borrowing borrowing = new Borrowing(copy, member);
                         borrowings.add(borrowing);
                         addBorrowingToDatabase(borrowing);
-                        System.out.println("You just issued a book to member " + member.getMemberID()
-                                + ", due date is: " + borrowing.getDueDate());
+                        System.out.println("You just issued a book to member " + member.getMemberID() + ".");
                         borrowing.displayBorrowingDetails();
                     } else {
                         System.out.println("This copy is already borrowed by other.");
@@ -215,8 +212,9 @@ public class LibraryBorrowingManagement {
     //Hiển thị trạng thái những bản cpoies của quyển sách
     public void displayBookCopies(Book book) {
         System.out.println(libraryBookManagement.getHeader());
-        System.out.println(book.toString());
-        System.out.println("This book has " + book.getCopies().size() + "copy:");
+        String order = String.format("%-10s ", 1);
+        System.out.println(order + book.toString());
+        System.out.println("This book has " + book.getCopies().size() + " copy:");
         System.out.println(copyHeader);
         if (book.getCopiesQuantity() > 0) {
             book.displayAllCopies();

@@ -15,8 +15,8 @@ public class CommandLineInterface {
     public void displayMenu() {
         boolean flag = true;
         while (flag) {
-            System.out.println("Welcome to " + commandLineInterfaceBooks.getLibrary().getName());
-            System.out.println("Library adress: " + commandLineInterfaceBooks.getLibrary().getAddress());
+            System.out.println(commandLineInterfaceBooks.getLibrary().getName() +", brings the whole world to your hands.");
+            System.out.println("Library address: " + commandLineInterfaceBooks.getLibrary().getAddress());
             System.out.println("---------------------------------------------------");
             System.out.println("[0] Exit");
             System.out.println("[1] Manage Books");
